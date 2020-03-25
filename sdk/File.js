@@ -1,14 +1,8 @@
 const fs = require('fs')
-// const path = require('path')
 const db = require('../model/db')
 const Folder = require('./Folder')
-const Storage = require('./qiniu/Storage')
-const { accessKey, secretKey, bucket, origin } = require('../config/qiniu')
 const { toObjectOpts } = require('../model/util')
-
-const store = new Storage(accessKey, secretKey, bucket)
-
-// const { normalizeName, getDirParamType, DIR_PARAM_TYPE } = require('./util')
+const store = require('./store')
 
 const File = {
   /**

@@ -1,5 +1,7 @@
 const qiniu = require('qiniu')
 
+const DEFAULT_TOEKN_EXPIRES = 5 * 60 // 默认上传token有效期
+
 class Storage {
   static initConfig() {
     const config = new qiniu.conf.Config()
@@ -20,10 +22,20 @@ class Storage {
     }
     const options = { scope: bucket }
     const putPolicy = new qiniu.rs.PutPolicy(options)
-    this.uploadToken = putPolicy.uploadToken(this.auth.mac)
+    this.putPolicy = putPolicy
+    // this.uploadToken = putPolicy.uploadToken(this.auth.mac)
     this.config = Storage.initConfig()
     this.bucketManager = new qiniu.rs.BucketManager(this.auth.mac, this.config)
     this.bucket = bucket
+  }
+
+  getUploadToken(expires = DEFAULT_TOEKN_EXPIRES) {
+    const options = {
+      scope: this.bucket,
+      expires,
+    }
+    const putPolicy = new qiniu.rs.PutPolicy(options)
+    return putPolicy.uploadToken(this.auth.mac)
   }
 
   putFile(key, file) {
@@ -31,7 +43,8 @@ class Storage {
     return new Promise((resolve, reject) => {
       const formUploader = new qiniu.form_up.FormUploader(this.config)
       const putExtra = new qiniu.form_up.PutExtra()
-      formUploader.putStream(this.uploadToken, key, file, putExtra, (respErr, respBody, respInfo) => {
+      const uploadToken = this.getUploadToken()
+      formUploader.putStream(uploadToken, key, file, putExtra, (respErr, respBody, respInfo) => {
         if (respErr) {
           reject(respErr)
         }
