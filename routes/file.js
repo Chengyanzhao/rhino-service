@@ -4,11 +4,30 @@ const multer = require('multer')
 const authentication = require('../middleware/authentication')
 const ResponseData = require('../class/ResponseData')
 const client = require('../sdk')
+const store = require('../sdk/store')
 
 const upload = multer({ dest: 'uploads/' }) // 文件储存路径
 const router = express.Router()
 
 router.use(authentication)
+
+
+/**
+ * 获取uploadToken
+ */
+router.get('/uploadToken', async (req, res) => {
+  const resData = new ResponseData()
+  try {
+    const uploadToken = store.getUploadToken()
+    resData.setData({ uploadToken })
+    resData.setStatus(0)
+  } catch (error) {
+    resData.setMsg(error.message)
+    resData.setStatus(-1)
+  } finally {
+    res.json(resData)
+  }
+})
 
 /**
  * 上传文件
@@ -37,7 +56,6 @@ router.put('/', upload.single('file'), async (req, res) => {
     res.json(resData)
   }
 })
-
 
 /**
  * 删除文件
